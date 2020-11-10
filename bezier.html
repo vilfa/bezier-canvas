@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DN02 | Bézier</title>
+
+    <style>
+        html,
+        body {
+            box-sizing: border-box;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+        }
+        canvas {
+            box-sizing: border-box;
+            z-index: 0;
+        }
+        #controls {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            z-index: 1;
+            color: black;
+        }
+        .control-element {
+            cursor: pointer;
+            width: 4.5rem;
+            height: 4.5rem;
+            margin: .35rem;
+        }
+        .control-element:hover {
+            background: rgba(0, 0, 0, 0.025) !important;
+        }
+        .control-element:active {
+            background: rgba(0, 0, 0, 0.045) !important;
+        }
+        input, button {
+            border-radius: .25rem;
+            padding: 0;
+            border: none;
+            outline: 0;
+            box-shadow: 0 3px 2px rgba(0, 0, 0, 0.0425),
+                0 7px 6px rgba(0, 0, 0, 0.0525),
+                0 6px 7px rgba(0, 0, 0, 0.151);
+        }
+        .icon {
+            font-size: 1.35rem;
+            pointer-events: none;
+        }
+    </style>
+    <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACN0lEQVRYhe3SQWvTYBjA8Vx0iOLYofQrbCt0snhx36CHXkShiYjOeRmSDEHQKsPx9uB0elF26FwyD7JD10uFUjoCbogSbRPb+GY0jR5UENOCDMacgvPxYCIhLDTqm+7SF55b4P97wkNRngcJrq+d4qetFF9uM9zdTXZywPtNaO/j6cuHWim+3GJ4cMZiprSt8XSkK3GL4Vfd8RbDw4drd0BVN7Aky9F9iSu1BpSfq7CQK+oFKQSEmeD6vL/dG8/mivBk7SVUsImXCxJZRJvlp33jL1xx/S2srD6DxXwJq6ZJ7iYsz/Z7bm7HH+ZL8LTyBjSs1EBNkEFYDHcvyOZOvK7XdneUiR9QTWpEEO/ZyQGLmdKCbF7Hr3/uKBO7UE2CPWQQW+PpiKpu4M7xi+44WYQky9GFXFEPuHk4iIIkRyvYxAE3DwexXJCii/kSdh1ckDhZhGqaEQ0rNfvag8bJIkBNRKCa1P4B0EP0ED2E72yvsZr5eOboviC+rjNgProJhoBu/TfgbxF/4iKC5hL6Up+7crhrCHfcmaaAzhMBdELsFTdEBIaASsQAfgjf+O/5Jt8ncIx+iA5x+xYyJ4kCHMT2Oqt1ihsigoaIBOIAiqKod9nZ/qaIbhsC2vSLv5q/AXPcuU80TR8IBUFRFKXPzxxpLKELDQGVDRF9d+Lyg+swdmIMhkZoGIwfZ0IDuF81e7XfFDOnmmJGnL109vPQCG0D6JWuANwvFosdHD42emY4PpofjNPpX/9F94MD0M4AAAAAAElFTkSuQmCC">
+</head>
+<body>
+    <canvas id="canvas">
+    </canvas>
+    <div id="controls">
+        <input type="color" id="c-color-curves" class="control-element">
+        <button id="c-b-spline" class="control-element control-element-btn">
+            <span id="c-b-spline-icon" class="icon">⚡</span>
+        </button>
+        <button id="c-toogle-guides" class="control-element control-element-btn">
+            <span id="c-toogle-guides-icon" class="icon">📐</span>
+        </button>
+        <button id="c-clear" class="control-element control-element-btn">
+            <span id="c-clear-icon" class="icon">❌</span>
+        </button>
+        <input type="color" id="c-color-background" class="control-element">
+    </div>
+    <script src="bezier.js"></script>
+</body>
+</html>
