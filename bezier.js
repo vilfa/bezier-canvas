@@ -50,7 +50,7 @@ class Canvas {
         this.fill = {
             endPoint: '#F25050',
             controlPoint: '#F27979',
-            interpolatedPoint: '#F2836B',
+            interpolatedPoint: '#F27979',
             curveLine: 'none',
             guideLine: 'none',
             bSpline: 'none'
@@ -203,6 +203,9 @@ class Canvas {
     }
 
     drawAllCurves() {
+        if (this.controlPoints.length < 4) {
+            return;
+        }
         for (let i = 0; i < this.isDrawnCurve.length; i++) {
             let index = i * 4;
             let quad = [
@@ -217,6 +220,9 @@ class Canvas {
     }
 
     drawAllGuides() {
+        if (this.controlPoints.length < 2) {
+            return;
+        }
         for (let i = 0; i < this.isDrawnGuide.length; i++) {
             let index = i * 2;
             let duo = [
@@ -231,6 +237,9 @@ class Canvas {
         this.createBSplinePoints();
         this.createBSplineInterpolatedPoints();
         this.drawAllInterpolatedPoints();
+        if (this.bControlPoints.length < 4) {
+            return;
+        }
         for (let i = 0; i < this.isDrawnBSpline.length; i++) {
             let index = i * 4;
             let quad = [
@@ -266,6 +275,7 @@ class Canvas {
     }
 
     clearIsDrawn() {
+        this.refreshIsDrawn();
         for (let i = 0; i < this.isDrawnCurve.length; i++) {
             this.isDrawnCurve[i] = false;
         }
@@ -273,6 +283,17 @@ class Canvas {
             this.isDrawnGuide[i] = false;
         }
         this.isDrawnBSpline = [];
+    }
+
+    refreshIsDrawn() {
+        const isDrawnCurveNewSize = Math.trunc(this.controlPoints.length / 4);
+        const isDrawnGuideNewSize = Math.trunc(this.controlPoints.length / 2);
+        while (this.isDrawnCurve.length > isDrawnCurveNewSize) {
+            this.isDrawnCurve.pop();
+        }
+        while (this.isDrawnGuide.length > isDrawnGuideNewSize) {
+            this.isDrawnGuide.pop();
+        }
     }
 
     checkCollision(event) {
@@ -357,6 +378,11 @@ class Canvas {
         this.stroke.bSpline = complementaryColor;
     }
 
+    undo() {
+        this.controlPoints.pop();
+        this.repaint();
+    }
+
     /**
      *
      * EVENT HANDLERS
@@ -434,6 +460,10 @@ class EventHandler {
         app.controls.onToggleGuideClick();
     }
 
+    static handleUndo() {
+        app.controls.onUndoClick();
+    }
+
     static handleClear() {
         app.controls.onClearClick();
     }
@@ -459,8 +489,9 @@ class Controls {
         this.colorBGB = document.querySelector('#c-color-background');
         this.bSplineB = document.querySelector('#c-b-spline');
         this.toggleGuidesB = document.querySelector('#c-toogle-guides');
+        this.undoB = document.querySelector('#c-undo');
         this.clearB = document.querySelector('#c-clear');
-        this.controlElements = [this.colorCB, this.colorBGB, this.bSplineB, this.toggleGuidesB, this.clearB];
+        this.controlElements = [this.colorCB, this.colorBGB, this.bSplineB, this.toggleGuidesB, this.undoB, this.clearB];
 
         this.color = '#FFFFFF';
 
@@ -520,6 +551,10 @@ class Controls {
 
     onToggleGuideClick() {
         app.toggleGuides();
+    }
+
+    onUndoClick() {
+        app.undo();
     }
 
     onClearClick() {
@@ -634,4 +669,5 @@ app.controls.colorCB.addEventListener('change', EventHandler.handleForegroundCol
 app.controls.colorBGB.addEventListener('change', EventHandler.handleBackgroundColorChange);
 app.controls.bSplineB.addEventListener('click', EventHandler.handleBSpline);
 app.controls.toggleGuidesB.addEventListener('click', EventHandler.handleToggleGuides);
+app.controls.undoB.addEventListener('click', EventHandler.handleUndo);
 app.controls.clearB.addEventListener('click', EventHandler.handleClear);
