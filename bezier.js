@@ -9,7 +9,8 @@ const POINT_TYPE = {
 
 const LINE_TYPE = {
     CURVE: 0,
-    GUIDE: 1
+    GUIDE: 1,
+    BSPLINE: 2
 }
 
 const APP_MODE = {
@@ -23,8 +24,12 @@ const APP_MODE = {
 class Canvas {
     constructor() {
         this.controlPoints = [];
+        this.bControlPoints = [];
+        this.bInterpolated = [];
+
         this.isDrawnCurve = [];
         this.isDrawnGuide = [];
+        this.isDrawnBSpline = [];
 
         this.isDrag = false;
         this.dragId = null;
@@ -38,7 +43,8 @@ class Canvas {
             controlPoint: 'none',
             interpolatedPoint: 'none',
             curveLine: '#05F2C7',
-            guideLine: '#0D0D0D'
+            guideLine: '#0D0D0D',
+            bSpline: '#fa0d38'
         };
 
         this.fill = {
@@ -46,7 +52,8 @@ class Canvas {
             controlPoint: '#F27979',
             interpolatedPoint: '#F2836B',
             curveLine: 'none',
-            guideLine: 'none'
+            guideLine: 'none',
+            bSpline: 'none'
         };
 
         this.thickness = {
@@ -54,12 +61,13 @@ class Canvas {
             controlPoint: 1,
             interpolatedPoint: 1,
             curveLine: 2,
-            guideLine: 1
+            guideLine: 1,
+            bSpline: 2
         };
 
         this.radius = {
-            endPoint: 5,
-            controlPoint: 4,
+            endPoint: 6,
+            controlPoint: 5,
             interpolatedPoint: 5
         };
 
@@ -88,17 +96,72 @@ class Canvas {
         }
     }
 
+    createBSplinePoints() {
+        this.bControlPoints = [];
+        for (let i = 2; i < this.controlPoints.length; i++) {
+            let p = this.controlPoints[i];
+            this.bControlPoints.push(new Point(p.x, p.y, p.r, p.type));
+            if (this.bControlPoints.length % 4 === 0 && this.bControlPoints.length > 0) {
+                this.isDrawnBSpline.push(false);
+            }
+        }
+        this.recalcBControlPoints();
+    }
+
+    recalcBControlPoints() {
+        for(let i = 0; i < this.isDrawnBSpline.length; i++) {
+            let index = i * 4;
+            let p0 = this.bControlPoints[index + 1];
+            let p1 = this.bControlPoints[index];
+            let p2 = this.bControlPoints[index + 3];
+            let p3 = this.bControlPoints[index + 2];
+
+            p1.x += (p0.x - p1.x) * 2;
+            p1.y += (p0.y - p1.y) * 2;
+            p2.x += (p3.x - p2.x) * 2;
+            p2.y += (p3.y - p2.y) * 2;
+
+            this.bControlPoints[index] = p1;
+            this.bControlPoints[index + 3] = p2;
+        }
+    }
+
+    createBSplineInterpolatedPoints() {
+        this.bInterpolated = [];
+
+        for(let i = 0; i < this.isDrawnBSpline.length; i++) {
+            let index = i * 4;
+            let quad = [
+                this.bControlPoints[index],
+                this.bControlPoints[index + 1],
+                this.bControlPoints[index + 2],
+                this.bControlPoints[index + 3]
+            ];
+            const curve = BezierCurve.cubic(quad[0], quad[1], quad[2], quad[3], 0.001);
+            this.bInterpolated.push(new Point(curve[499].x, curve[499].y, this.radius.interpolatedPoint, POINT_TYPE.INTERPOLATED));
+        }
+    }
+
     drawPoint(point) {
-        console.log('draw point.');
+        // console.log('draw point.');
         if (point.type === POINT_TYPE.END) {
             this.setDrawParams(this.fill.endPoint, this.stroke.endPoint, this.thickness.endPoint);
+            this.context.beginPath();
+            this.context.arc(point.x, point.y, point.r, 0, Math.PI * 2);
+            this.context.fill();
+            this.context.closePath();
         } else if (point.type === POINT_TYPE.CONTROL) {
             this.setDrawParams(this.fill.controlPoint, this.stroke.controlPoint, this.thickness.controlPoint);
+            this.context.beginPath();
+            this.context.arc(point.x, point.y, point.r, 0, Math.PI * 2);
+            this.context.fill();
+            this.context.closePath();
+        } else if (point.type === POINT_TYPE.INTERPOLATED) {
+            this.setDrawParams(this.fill.interpolatedPoint, this.stroke.interpolatedPoint, this.thickness.interpolatedPoint);
+            this.context.beginPath();
+            this.context.fillRect(point.x - point.r, point.y - point.r, point.r * 2, point.r * 2);
+            this.context.closePath();
         }
-        this.context.beginPath();
-        this.context.arc(point.x, point.y, point.r, 0, Math.PI * 2);
-        this.context.fill();
-        this.context.closePath();
     }
 
     movePoint(pid, event) {
@@ -113,6 +176,12 @@ class Canvas {
         }
     }
 
+    drawAllInterpolatedPoints() {
+        for (const point of this.bInterpolated) {
+            this.drawPoint(point);
+        }
+    }
+
     /**
      *
      * CURVES
@@ -120,14 +189,17 @@ class Canvas {
      */
     drawCurve(quad) {
         const curve = BezierCurve.cubic(quad[0], quad[1], quad[2], quad[3], 0.001);
-        this.setDrawParams(this.fill.curveLine, this.stroke.curveLine, this.thickness.curveLine);
         BezierCurve.draw(curve, LINE_TYPE.CURVE, this.context);
     }
 
     drawGuide(duo) {
-        let guide = BezierCurve.linear(duo[0], duo[1], 0.001);
-        this.setDrawParams(this.fill.guideLine, this.stroke.guideLine, this.thickness.guideLine);
+        const guide = BezierCurve.linear(duo[0], duo[1], 0.001);
         BezierCurve.drawDashed(guide, LINE_TYPE.GUIDE, this.context);
+    }
+
+    drawBSpline(quad) {
+        const curve = BezierCurve.cubic(quad[0], quad[1], quad[2], quad[3], 0.001);
+        BezierCurve.draw(curve, LINE_TYPE.BSPLINE, this.context);
     }
 
     drawAllCurves() {
@@ -155,14 +227,21 @@ class Canvas {
         }
     }
 
-    bSpline() {
-        if (this.bSpline) {
-            this.bSpline = false;
-        } else {
-            this.bSpline = true;
+    drawAllBSplines() {
+        this.createBSplinePoints();
+        this.createBSplineInterpolatedPoints();
+        this.drawAllInterpolatedPoints();
+        for (let i = 0; i < this.isDrawnBSpline.length; i++) {
+            let index = i * 4;
+            let quad = [
+                this.bControlPoints[index + 1],
+                this.bControlPoints[index],
+                this.bControlPoints[index + 3],
+                this.bControlPoints[index + 2]
+            ];
+            this.drawBSpline(quad);
+            this.isDrawnBSpline[i] = true;
         }
-
-
     }
 
     /**
@@ -190,15 +269,19 @@ class Canvas {
         for (let i = 0; i < this.isDrawnCurve.length; i++) {
             this.isDrawnCurve[i] = false;
         }
+        for (let i = 0; i < this.isDrawnGuide.length; i++) {
+            this.isDrawnGuide[i] = false;
+        }
+        this.isDrawnBSpline = [];
     }
 
     checkCollision(event) {
         for (let i = 0; i < this.controlPoints.length; i++) {
             const p = this.controlPoints[i];
             if ((event.x >= p.x - p.r) && (event.x <= p.x + p.r) && (event.y >= p.y - p.r) && (event.y <= p.y + p.r)) {
-                console.log('collided point. event coords.');
-                console.log(p);
-                console.log(event.x, event.y);
+                // console.log('collided point. event coords.');
+                // console.log(p);
+                // console.log(event.x, event.y);
                 return { isCollided: true, pid: i };
             }
         }
@@ -225,6 +308,15 @@ class Canvas {
         this.repaint();
     }
 
+    toggleBSpline() {
+        if (this.bSpline) {
+            this.bSpline = false;
+        } else {
+            this.bSpline = true;
+        }
+        this.repaint();
+    }
+
     repaint() {
         this.clearCanvas();
         this.clearIsDrawn();
@@ -233,17 +325,36 @@ class Canvas {
         if (this.guides) {
             this.drawAllGuides();
         }
+        if (this.bSpline) {
+            this.drawAllBSplines();
+        }
     }
 
     refresh() {
         this.controlPoints = [];
+        this.bControlPoints = [];
+        this.bInterpolated = [];
+
         this.isDrawnCurve = [];
         this.isDrawnGuide = [];
+        this.isDrawnBSpline = [];
 
         this.isDrag = false;
         this.dragId = null;
 
+        this.guides = true;
+
+        this.bSpline = false;
         this.clearCanvas();
+    }
+
+    setBSplineComplementary() {
+        const whiteColor = Number.parseInt('ffffff', 16);
+        const curveColor = Number.parseInt(this.stroke.curveLine.replace('#', ''), 16);
+
+        let complement = whiteColor - curveColor;
+        const complementaryColor = '#' + complement.toString(16);
+        this.stroke.bSpline = complementaryColor;
     }
 
     /**
@@ -254,7 +365,7 @@ class Canvas {
     onMouseDown(event) {
         const collision = this.checkCollision(event);
         if (collision.isCollided) {
-            console.log('collision.');
+            // console.log('collision.');
             this.isDrag = true;
             this.dragId = collision.pid;
             this.canvas.style.cursor = 'move';
@@ -288,7 +399,7 @@ class Canvas {
  */
 class EventHandler {
     static handleWindowResize(event) {
-        console.log('resize.');
+        // console.log('resize.');
         app.refreshCanvas(event);
     }
 
@@ -390,6 +501,7 @@ class Controls {
      */
     onColorChangeC(event) {
         app.stroke.curveLine = event.target.value;
+        app.setBSplineComplementary();
         this.appForeground = event.target.value;
         this.refreshColorPickerC(this.appForeground);
         app.repaint();
@@ -403,7 +515,7 @@ class Controls {
     }
 
     onBSplineClick() {
-        app.bSpline();
+        app.toggleBSpline();
     }
 
     onToggleGuideClick() {
@@ -468,6 +580,8 @@ class BezierCurve {
             app.setDrawParams(app.fill.curveLine, app.stroke.curveLine, app.thickness.curveLine);
         } else if (type === LINE_TYPE.GUIDE) {
             app.setDrawParams(app.fill.guideLine, app.stroke.guideLine, app.thickness.guideLine);
+        } else if (type === LINE_TYPE.BSPLINE) {
+            app.setDrawParams(app.fill.bSpline, app.stroke.bSpline, app.thickness.bSpline);
         }
         context.beginPath();
         context.moveTo(curve[0].x, curve[0].y);
