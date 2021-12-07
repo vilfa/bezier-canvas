@@ -1,6 +1,3 @@
-/**
- * Enums for various stuff.
- */
 const POINT_TYPE = {
     END: 0,
     CONTROL: 1,
@@ -18,9 +15,6 @@ const APP_MODE = {
     NIGHT: 1
 }
 
-/**
- * Basically the main class.
- */
 class Canvas {
     constructor() {
         this.controlPoints = [];
@@ -109,7 +103,7 @@ class Canvas {
     }
 
     recalcBControlPoints() {
-        for(let i = 0; i < this.isDrawnBSpline.length; i++) {
+        for (let i = 0; i < this.isDrawnBSpline.length; i++) {
             let index = i * 4;
             let p0 = this.bControlPoints[index + 1];
             let p1 = this.bControlPoints[index];
@@ -129,7 +123,7 @@ class Canvas {
     createBSplineInterpolatedPoints() {
         this.bInterpolated = [];
 
-        for(let i = 0; i < this.isDrawnBSpline.length; i++) {
+        for (let i = 0; i < this.isDrawnBSpline.length; i++) {
             let index = i * 4;
             let quad = [
                 this.bControlPoints[index],
@@ -143,7 +137,6 @@ class Canvas {
     }
 
     drawPoint(point) {
-        // console.log('draw point.');
         if (point.type === POINT_TYPE.END) {
             this.setDrawParams(this.fill.endPoint, this.stroke.endPoint, this.thickness.endPoint);
             this.context.beginPath();
@@ -300,9 +293,6 @@ class Canvas {
         for (let i = 0; i < this.controlPoints.length; i++) {
             const p = this.controlPoints[i];
             if ((event.x >= p.x - p.r) && (event.x <= p.x + p.r) && (event.y >= p.y - p.r) && (event.y <= p.y + p.r)) {
-                // console.log('collided point. event coords.');
-                // console.log(p);
-                // console.log(event.x, event.y);
                 return { isCollided: true, pid: i };
             }
         }
@@ -391,7 +381,6 @@ class Canvas {
     onMouseDown(event) {
         const collision = this.checkCollision(event);
         if (collision.isCollided) {
-            // console.log('collision.');
             this.isDrag = true;
             this.dragId = collision.pid;
             this.canvas.style.cursor = 'move';
@@ -420,12 +409,8 @@ class Canvas {
     }
 }
 
-/**
- * Static class to partition off the handling of events and also clean stuff up.
- */
 class EventHandler {
     static handleWindowResize(event) {
-        // console.log('resize.');
         app.refreshCanvas(event);
     }
 
@@ -469,9 +454,6 @@ class EventHandler {
     }
 }
 
-/**
- * Represents the controls on the page.
- */
 class Controls {
     constructor(foreground, background) {
         this.appForeground = foreground;
@@ -562,19 +544,9 @@ class Controls {
     }
 }
 
-/**
- * Static class for calculating and drawing the actual curves.
- */
 class BezierCurve {
     static linear(p0, p1, res) {
         let curve = [];
-        // for (let t = 0; t < 1; t += res) {
-        //     let px = (1 - t) * p0.x
-        //         + t * p1.x;
-        //     let py = (1 - t) * p0.y
-        //         + t * p1.y;
-        //     curve.push(new Point(px, py));
-        // }
         curve.push(p0);
         curve.push(p1);
         return curve;
@@ -643,9 +615,6 @@ class BezierCurve {
     }
 }
 
-/**
- * Class that represents the point.
- */
 class Point {
     constructor(x, y, r, type) {
         this.x = x;
