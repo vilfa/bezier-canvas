@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DN02 | Bézier</title>
+    <title>Bézier Canvas</title>
 
     <style>
         html,
@@ -16,10 +17,12 @@
             padding: 0;
             font-family: sans-serif;
         }
+
         canvas {
             box-sizing: border-box;
             z-index: 0;
         }
+
         #controls {
             position: absolute;
             display: flex;
@@ -28,19 +31,24 @@
             z-index: 1;
             color: black;
         }
+
         .control-element {
             cursor: pointer;
             width: 4.5rem;
             height: 4.5rem;
             margin: .35rem;
         }
+
         .control-element:hover {
             background: rgba(0, 0, 0, 0.025) !important;
         }
+
         .control-element:active {
             background: rgba(0, 0, 0, 0.045) !important;
         }
-        input, button {
+
+        input,
+        button {
             border-radius: .25rem;
             padding: 0;
             border: none;
@@ -49,13 +57,16 @@
                 0 7px 6px rgba(0, 0, 0, 0.0525),
                 0 6px 7px rgba(0, 0, 0, 0.151);
         }
+
         .icon {
             font-size: 1.35rem;
             pointer-events: none;
         }
     </style>
-    <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABIUlEQVQ4jd3Ov0vDQBjG8aP6ryg4ObiW/gDt1FBw0XSx7ppM7tfTveigINxlVAulQzUtXMXoltKWZKme0N1Eh1puta9DCTQ69OroA+/4/fAihBACjBPhjlkJdMMPi2YKLTLAOBHsHlqhbsDb/hH0bUfSWiurDIS6WYniXvMJrmwH2q4nrTrPKAGBbviz8b3rw3XzEQZeYwwdLT3/g6KZ6tuOjMd3k6/e9gS6eamE0For23Y9GY81mJ4iYtV5ZuA1xvF4QQQ6Whq6efkb+HfIiJfk0Dpe+RPyyfdAsDK8svL5XOAnEsWCERCMvEO1uqSMjHhJzsTTozipBCCE0PMlXn2h5EIw8iEYgRt8AIXc1qkyEO0B4+UhPUkWcptna+sbt99BuVHr9y6LLAAAAABJRU5ErkJggg==">
+    <link rel="icon"
+        href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABIUlEQVQ4jd3Ov0vDQBjG8aP6ryg4ObiW/gDt1FBw0XSx7ppM7tfTveigINxlVAulQzUtXMXoltKWZKme0N1Eh1puta9DCTQ69OroA+/4/fAihBACjBPhjlkJdMMPi2YKLTLAOBHsHlqhbsDb/hH0bUfSWiurDIS6WYniXvMJrmwH2q4nrTrPKAGBbviz8b3rw3XzEQZeYwwdLT3/g6KZ6tuOjMd3k6/e9gS6eamE0For23Y9GY81mJ4iYtV5ZuA1xvF4QQQ6Whq6efkb+HfIiJfk0Dpe+RPyyfdAsDK8svL5XOAnEsWCERCMvEO1uqSMjHhJzsTTozipBCCE0PMlXn2h5EIw8iEYgRt8AIXc1qkyEO0B4+UhPUkWcptna+sbt99BuVHr9y6LLAAAAABJRU5ErkJggg==">
 </head>
+
 <body>
     <canvas id="canvas">
     </canvas>
@@ -77,4 +88,5 @@
     </div>
     <script src="bezier.js"></script>
 </body>
+
 </html>
